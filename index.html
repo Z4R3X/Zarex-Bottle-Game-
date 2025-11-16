@@ -1,0 +1,233 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Zarex_Bottle_Game</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background: #050505;
+            color: white;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+        }
+
+        .container {
+            background: #101010;
+            padding: 30px;
+            border-radius: 20px;
+            width: 380px;
+            text-align: center;
+            box-shadow: 0 0 25px rgba(0, 180, 255, 0.6);
+        }
+
+        h1 {
+            margin-bottom: 15px;
+            color: #00b4ff;
+        }
+
+        #players {
+            margin-bottom: 20px;
+        }
+
+        .player {
+            display: flex;
+            gap: 10px;
+            margin: 6px 0;
+        }
+
+        .player input {
+            flex: 1;
+            padding: 8px;
+            border-radius: 8px;
+            border: none;
+        }
+
+        .deleteBtn {
+            background: red;
+            border: none;
+            width: 34px;
+            border-radius: 8px;
+            color: white;
+            cursor: pointer;
+        }
+
+        #addPlayerBtn {
+            background: #00b4ff;
+            padding: 10px;
+            width: 100%;
+            border: none;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            cursor: pointer;
+        }
+
+        #bottle {
+            width: 150px;
+            height: 150px;
+            margin: 20px auto;
+            background: url('https://upload.wikimedia.org/wikipedia/commons/thumb/2/23/Longneck_Bottle_Vector.svg/512px-Longneck_Bottle_Vector.svg.png') no-repeat center;
+            background-size: contain;
+            transition: transform 2.7s ease-out;
+        }
+
+        button {
+            padding: 12px;
+            width: 100%;
+            border: none;
+            background: #00b4ff;
+            color: white;
+            margin: 10px 0;
+            border-radius: 10px;
+            cursor: pointer;
+        }
+
+        #modeChoice {
+            margin-top: 15px;
+            display: none;
+        }
+
+        #result {
+            margin-top: 20px;
+            min-height: 40px;
+            font-size: 18px;
+            color: #d0efff;
+        }
+
+        #scoreboard {
+            margin-top: 20px;
+            padding: 10px;
+            border-radius: 10px;
+            background: #0c0c0c;
+        }
+
+        .scoreline {
+            margin: 4px 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Zarex_Bottle_Game</h1>
+
+        <div id="players"></div>
+
+        <button id="addPlayerBtn" onclick="addPlayer()">+ Ajouter un joueur</button>
+
+        <div id="bottle"></div>
+
+        <button onclick="spinBottle()">Tourner la bouteille</button>
+
+        <div id="modeChoice">
+            <button onclick="choose('action')">Action</button>
+            <button onclick="choose('verite')">Vérité</button>
+        </div>
+
+        <div id="result"></div>
+
+        <div id="scoreboard"></div>
+    </div>
+
+    <audio id="spinSound" src="https://cdn.pixabay.com/audio/2022/03/15/audio_b3a2250a63.mp3"></audio>
+
+    <script>
+        let playerCount = 0;
+        const playerScores = {};
+
+        const actions = [
+            "Fais une danse drôle",
+            "Raconte une anecdote gênante",
+            "Fais une imitation pendant 10 secondes",
+            "Compose un message au hasard",
+            "Répète tout ce qu'on dit pendant 1 minute"
+        ];
+
+        const verites = [
+            "Quel est ton plus grand secret ?",
+            "Qui est ton crush ?",
+            "As-tu déjà menti à un ami ?",
+            "Quelle est ta plus grande peur ?",
+            "Quel est ton rêve le plus fou ?"
+        ];
+
+        function addPlayer() {
+            playerCount++;
+            const div = document.createElement("div");
+            div.className = "player";
+            div.innerHTML = `
+                <input type="text" placeholder="Joueur ${playerCount}" oninput="updateScores()">
+                <button class="deleteBtn" onclick="deletePlayer(this)">✖</button>
+            `;
+            document.getElementById("players").appendChild(div);
+            updateScores();
+        }
+
+        function deletePlayer(btn) {
+            btn.parentElement.remove();
+            updateScores();
+        }
+
+        function getPlayers() {
+            const names = Array.from(document.querySelectorAll("#players input"))
+                .map(i => i.value.trim())
+                .filter(n => n !== "");
+            return names;
+        }
+
+        function spinBottle() {
+            const players = getPlayers();
+            if (players.length === 0) {
+                document.getElementById("result").innerText = "Ajoute au moins un joueur !";
+                return;
+            }
+
+            const bottle = document.getElementById("bottle");
+            const angle = Math.floor(Math.random() * 3600) + 1000;
+            bottle.style.transform = `rotate(${angle}deg)`;
+
+            document.getElementById("spinSound").play();
+
+            const chosen = players[Math.floor(Math.random() * players.length)];
+
+            setTimeout(() => {
+                document.getElementById("modeChoice").style.display = "block";
+                document.getElementById("result").innerText = `${chosen} est choisi !`;
+                window.currentPlayer = chosen;
+            }, 2700);
+        }
+
+        function choose(type) {
+            let finalText = "";
+            if (type === 'action') {
+                finalText = actions[Math.floor(Math.random() * actions.length)];
+            } else {
+                finalText = verites[Math.floor(Math.random() * verites.length)];
+            }
+
+            document.getElementById("result").innerText = `${window.currentPlayer} : ${finalText}`;
+
+            if (!playerScores[window.currentPlayer]) playerScores[window.currentPlayer] = 0;
+            playerScores[window.currentPlayer]++;
+            updateScoreboard();
+
+            document.getElementById("modeChoice").style.display = "none";
+        }
+
+        function updateScores() {
+            updateScoreboard();
+        }
+
+        function updateScoreboard() {
+            let html = "<h3>Score</h3>";
+            Object.keys(playerScores).forEach(p => {
+                html += `<div class='scoreline'>${p}: ${playerScores[p]}</div>`;
+            });
+            document.getElementById("scoreboard").innerHTML = html;
+        }
+    </script>
+</body>
+</html>
