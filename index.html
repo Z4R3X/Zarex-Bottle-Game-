@@ -1,233 +1,216 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="fr">
 <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Zarex_Bottle_Game</title>
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            background: #050505;
-            color: white;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            height: 100vh;
-            margin: 0;
-        }
-
-        .container {
-            background: #101010;
-            padding: 30px;
-            border-radius: 20px;
-            width: 380px;
-            text-align: center;
-            box-shadow: 0 0 25px rgba(0, 180, 255, 0.6);
-        }
-
-        h1 {
-            margin-bottom: 15px;
-            color: #00b4ff;
-        }
-
-        #players {
-            margin-bottom: 20px;
-        }
-
-        .player {
-            display: flex;
-            gap: 10px;
-            margin: 6px 0;
-        }
-
-        .player input {
-            flex: 1;
-            padding: 8px;
-            border-radius: 8px;
-            border: none;
-        }
-
-        .deleteBtn {
-            background: red;
-            border: none;
-            width: 34px;
-            border-radius: 8px;
-            color: white;
-            cursor: pointer;
-        }
-
-        #addPlayerBtn {
-            background: #00b4ff;
-            padding: 10px;
-            width: 100%;
-            border: none;
-            border-radius: 10px;
-            margin-bottom: 20px;
-            cursor: pointer;
-        }
-
-        #bottle {
-            width: 150px;
-            height: 150px;
-            margin: 20px auto;
-            background: url('https://upload.wikimedia.org/wikipedia/commons/thumb/2/23/Longneck_Bottle_Vector.svg/512px-Longneck_Bottle_Vector.svg.png') no-repeat center;
-            background-size: contain;
-            transition: transform 2.7s ease-out;
-        }
-
-        button {
-            padding: 12px;
-            width: 100%;
-            border: none;
-            background: #00b4ff;
-            color: white;
-            margin: 10px 0;
-            border-radius: 10px;
-            cursor: pointer;
-        }
-
-        #modeChoice {
-            margin-top: 15px;
-            display: none;
-        }
-
-        #result {
-            margin-top: 20px;
-            min-height: 40px;
-            font-size: 18px;
-            color: #d0efff;
-        }
-
-        #scoreboard {
-            margin-top: 20px;
-            padding: 10px;
-            border-radius: 10px;
-            background: #0c0c0c;
-        }
-
-        .scoreline {
-            margin: 4px 0;
-        }
-    </style>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Action ou Vérité — Simple</title>
+  <style>
+    :root{font-family: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial;}
+    body{display:flex;align-items:center;justify-content:center;min-height:100vh;background:linear-gradient(135deg,#f6f8ff,#e9fff2);margin:0;padding:20px}
+    .card{width:100%;max-width:720px;background:#fff;border-radius:12px;box-shadow:0 8px 30px rgba(0,0,0,.08);padding:20px}
+    h1{margin:0 0 10px;font-size:20px}
+    p.small{margin:0 0 16px;color:#555}
+    label{display:block;margin:8px 0 4px;font-weight:600}
+    input,select,button{width:100%;padding:10px;border-radius:8px;border:1px solid #ddd;font-size:15px}
+    .row{display:flex;gap:10px}
+    .row > *{flex:1}
+    #gameArea{margin-top:16px}
+    .result{margin-top:12px;padding:14px;border-radius:10px;background:#f4f6ff;font-weight:700;min-height:64px;display:flex;align-items:center;justify-content:center}
+    .controls{display:flex;gap:8px;margin-top:12px}
+    .small-btn{padding:8px 12px;font-size:14px}
+    footer{margin-top:16px;font-size:13px;color:#666}
+    .user-list{max-height:120px;overflow:auto;border:1px dashed #eee;padding:8px;border-radius:8px}
+    .hint{font-size:13px;color:#777;margin-top:6px}
+  </style>
 </head>
 <body>
-    <div class="container">
-        <h1>Zarex_Bottle_Game</h1>
+  <div class="card">
+    <h1>Action • Vérité — version simple</h1>
+    <p class="small">Créez un compte (simplement un pseudo). Jouez en passant l'appareil ou choisissez un adversaire déjà enregistré.</p>
 
-        <div id="players"></div>
+    <div id="authArea">
+      <label for="username">Pseudo</label>
+      <input id="username" placeholder="Ex: Zarex" />
+      <div style="display:flex;gap:8px;margin-top:10px">
+        <button id="createBtn">Créer un compte</button>
+        <button id="loginBtn">Se connecter</button>
+      </div>
 
-        <button id="addPlayerBtn" onclick="addPlayer()">+ Ajouter un joueur</button>
-
-        <div id="bottle"></div>
-
-        <button onclick="spinBottle()">Tourner la bouteille</button>
-
-        <div id="modeChoice">
-            <button onclick="choose('action')">Action</button>
-            <button onclick="choose('verite')">Vérité</button>
-        </div>
-
-        <div id="result"></div>
-
-        <div id="scoreboard"></div>
+      <label style="margin-top:12px">Comptes enregistrés</label>
+      <div class="user-list" id="usersList">— aucun —</div>
     </div>
 
-    <audio id="spinSound" src="https://cdn.pixabay.com/audio/2022/03/15/audio_b3a2250a63.mp3"></audio>
+    <div id="gameArea" style="display:none">
+      <div style="display:flex;align-items:center;justify-content:space-between">
+        <div>
+          <div><strong>Connecté en:</strong> <span id="meName"></span></div>
+          <div class="hint">Jouez en « hot-seat » : le joueur à qui l'appareil appartient choisit un adversaire dans la liste.</div>
+        </div>
+        <div><button id="logoutBtn">Se déconnecter</button></div>
+      </div>
 
-    <script>
-        let playerCount = 0;
-        const playerScores = {};
+      <label style="margin-top:12px">Choisir adversaire</label>
+      <select id="opponentSelect"></select>
 
-        const actions = [
-            "Fais une danse drôle",
-            "Raconte une anecdote gênante",
-            "Fais une imitation pendant 10 secondes",
-            "Compose un message au hasard",
-            "Répète tout ce qu'on dit pendant 1 minute"
-        ];
+      <div class="row" style="margin-top:12px">
+        <button id="playBtn">Jouer !</button>
+        <button id="nextBtn">Prochain</button>
+      </div>
 
-        const verites = [
-            "Quel est ton plus grand secret ?",
-            "Qui est ton crush ?",
-            "As-tu déjà menti à un ami ?",
-            "Quelle est ta plus grande peur ?",
-            "Quel est ton rêve le plus fou ?"
-        ];
+      <div class="result" id="result">Prêt ? Appuie sur <strong>Jouer !</strong></div>
 
-        function addPlayer() {
-            playerCount++;
-            const div = document.createElement("div");
-            div.className = "player";
-            div.innerHTML = `
-                <input type="text" placeholder="Joueur ${playerCount}" oninput="updateScores()">
-                <button class="deleteBtn" onclick="deletePlayer(this)">✖</button>
-            `;
-            document.getElementById("players").appendChild(div);
-            updateScores();
+      <div class="controls">
+        <button id="truthBtn" class="small-btn">Vérité</button>
+        <button id="dareBtn" class="small-btn">Action</button>
+        <button id="shareBtn" class="small-btn">Copier défi</button>
+      </div>
+
+      <footer>
+        <div><strong>Note :</strong> cette version stocke localement les comptes sur ton iPad (localStorage). Pour du jeu en ligne réel il faut un serveur.</div>
+      </footer>
+    </div>
+  </div>
+
+  <script>
+    // --- Données simples (tu peux modifier les phrases) ---
+    const TRUTHS = [
+      "Quelle est ta plus grande peur ?",
+      "As-tu déjà menti à ton meilleur ami ? Raconte.",
+      "Quel est ton secret embarrassant ?",
+      "Qui est ta béguin actuel(le) ?",
+      "Quelle est la chose la plus bizarre que tu aies mangée ?"
+    ];
+
+    const DARES = [
+      "Chante le refrain d'une chanson au hasard pendant 30 secondes.",
+      "Envoie un message gênant à ton dernier contact dans la liste.",
+      "Fais 10 pompes maintenant.",
+      "Mime un animal pendant une minute.",
+      "Improvise un mini-danse de 20 secondes.",
+    ];
+
+    // --- Gestion des comptes simple (localStorage) ---
+    function loadUsers(){
+      try{
+        return JSON.parse(localStorage.getItem('aov_users')||'[]');
+      }catch(e){return []}
+    }
+    function saveUsers(users){
+      localStorage.setItem('aov_users', JSON.stringify(users));
+    }
+
+    // UI refs
+    const usernameInput = document.getElementById('username');
+    const createBtn = document.getElementById('createBtn');
+    const loginBtn = document.getElementById('loginBtn');
+    const usersList = document.getElementById('usersList');
+    const authArea = document.getElementById('authArea');
+    const gameArea = document.getElementById('gameArea');
+    const meNameSpan = document.getElementById('meName');
+    const opponentSelect = document.getElementById('opponentSelect');
+    const playBtn = document.getElementById('playBtn');
+    const nextBtn = document.getElementById('nextBtn');
+    const resultDiv = document.getElementById('result');
+    const logoutBtn = document.getElementById('logoutBtn');
+    const truthBtn = document.getElementById('truthBtn');
+    const dareBtn = document.getElementById('dareBtn');
+    const shareBtn = document.getElementById('shareBtn');
+
+    let currentUser = null;
+    let lastGenerated = '';
+
+    function renderUsers(){
+      const users = loadUsers();
+      if(users.length===0){usersList.innerText='— aucun —';}
+      else usersList.innerHTML = users.map(u=>'<div>'+escapeHtml(u)+'</div>').join('');
+
+      // remplir select
+      opponentSelect.innerHTML = '';
+      const defaultOption = document.createElement('option');
+      defaultOption.value=''; defaultOption.textContent = '— choisis un adversaire —';
+      opponentSelect.appendChild(defaultOption);
+      users.forEach(u=>{
+        if(u!==currentUser){
+          const opt = document.createElement('option'); opt.value = u; opt.textContent = u; opponentSelect.appendChild(opt);
         }
+      });
+    }
 
-        function deletePlayer(btn) {
-            btn.parentElement.remove();
-            updateScores();
-        }
+    function escapeHtml(s){return s.replace(/[&<>"']/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;', '"':'&quot;', "'":"&#39;"})[c]);}
 
-        function getPlayers() {
-            const names = Array.from(document.querySelectorAll("#players input"))
-                .map(i => i.value.trim())
-                .filter(n => n !== "");
-            return names;
-        }
+    createBtn.addEventListener('click', ()=>{
+      const name = (usernameInput.value||'').trim();
+      if(!name){alert('Choisis un pseudo.'); return}
+      const users = loadUsers();
+      if(users.includes(name)){alert('Ce pseudo existe déjà.'); return}
+      users.push(name); saveUsers(users);
+      usernameInput.value = '';
+      renderUsers();
+      alert('Compte créé : ' + name + '\nConnecte-toi avec le bouton Se connecter.');
+    });
 
-        function spinBottle() {
-            const players = getPlayers();
-            if (players.length === 0) {
-                document.getElementById("result").innerText = "Ajoute au moins un joueur !";
-                return;
-            }
+    loginBtn.addEventListener('click', ()=>{
+      const name = (usernameInput.value||'').trim();
+      if(!name){alert('Indique ton pseudo pour te connecter.'); return}
+      const users = loadUsers();
+      if(!users.includes(name)){alert('Aucun compte avec ce pseudo. Crée-le d'abord.'); return}
+      currentUser = name; startGameUI();
+    });
 
-            const bottle = document.getElementById("bottle");
-            const angle = Math.floor(Math.random() * 3600) + 1000;
-            bottle.style.transform = `rotate(${angle}deg)`;
+    logoutBtn.addEventListener('click', ()=>{currentUser=null; stopGameUI();});
 
-            document.getElementById("spinSound").play();
+    function startGameUI(){
+      authArea.style.display='none';
+      gameArea.style.display='block';
+      meNameSpan.textContent = currentUser;
+      renderUsers();
+      resultDiv.textContent = 'Prêt ? Appuie sur Jouer !';
+    }
+    function stopGameUI(){
+      authArea.style.display='block';
+      gameArea.style.display='none';
+      renderUsers();
+    }
 
-            const chosen = players[Math.floor(Math.random() * players.length)];
+    function pickRandom(arr){return arr[Math.floor(Math.random()*arr.length)];}
 
-            setTimeout(() => {
-                document.getElementById("modeChoice").style.display = "block";
-                document.getElementById("result").innerText = `${chosen} est choisi !`;
-                window.currentPlayer = chosen;
-            }, 2700);
-        }
+    playBtn.addEventListener('click', ()=>{
+      const opp = opponentSelect.value;
+      if(!opp){alert('Choisis un adversaire dans la liste.'); return}
+      // choisir aléatoirement action ou vérité
+      const isTruth = Math.random()<0.5;
+      const text = isTruth ? ('Vérité — ' + pickRandom(TRUTHS)) : ('Action — ' + pickRandom(DARES));
+      lastGenerated = text;
+      resultDiv.textContent = opp + ', ' + text;
+    });
 
-        function choose(type) {
-            let finalText = "";
-            if (type === 'action') {
-                finalText = actions[Math.floor(Math.random() * actions.length)];
-            } else {
-                finalText = verites[Math.floor(Math.random() * verites.length)];
-            }
+    nextBtn.addEventListener('click', ()=>{
+      // régénère même type si on veut : ici simplement génère aléatoire
+      playBtn.click();
+    });
 
-            document.getElementById("result").innerText = `${window.currentPlayer} : ${finalText}`;
+    truthBtn.addEventListener('click', ()=>{
+      lastGenerated = 'Vérité — ' + pickRandom(TRUTHS);
+      resultDiv.textContent = lastGenerated; 
+    });
+    dareBtn.addEventListener('click', ()=>{
+      lastGenerated = 'Action — ' + pickRandom(DARES);
+      resultDiv.textContent = lastGenerated; 
+    });
 
-            if (!playerScores[window.currentPlayer]) playerScores[window.currentPlayer] = 0;
-            playerScores[window.currentPlayer]++;
-            updateScoreboard();
+    shareBtn.addEventListener('click', async ()=>{
+      if(!lastGenerated){alert('Pas encore de défi généré.'); return}
+      try{
+        await navigator.clipboard.writeText(lastGenerated);
+        alert('Défi copié dans le presse-papiers !');
+      }catch(e){
+        prompt('Copie ce texte manuellement :', lastGenerated);
+      }
+    });
 
-            document.getElementById("modeChoice").style.display = "none";
-        }
+    // initial render
+    renderUsers();
 
-        function updateScores() {
-            updateScoreboard();
-        }
-
-        function updateScoreboard() {
-            let html = "<h3>Score</h3>";
-            Object.keys(playerScores).forEach(p => {
-                html += `<div class='scoreline'>${p}: ${playerScores[p]}</div>`;
-            });
-            document.getElementById("scoreboard").innerHTML = html;
-        }
-    </script>
+  </script>
 </body>
 </html>
